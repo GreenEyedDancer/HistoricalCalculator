@@ -1,4 +1,6 @@
-﻿namespace Calculator
+﻿using System.Drawing;
+
+namespace Calculator
 {
     partial class Calculator
     {
@@ -178,7 +180,7 @@
             this.ButtonDot.Name = "ButtonDot";
             this.ButtonDot.Size = new System.Drawing.Size(56, 54);
             this.ButtonDot.TabIndex = 3;
-            this.ButtonDot.Text = ".";
+            this.ButtonDot.Text = ",";
             this.ButtonDot.UseVisualStyleBackColor = true;
             this.ButtonDot.Click += new System.EventHandler(this.ButtonDot_Click);
             // 
@@ -221,6 +223,7 @@
             this.ButtonInverse.Text = "1/x";
             this.ButtonInverse.UseVisualStyleBackColor = true;
             this.ButtonInverse.Click += new System.EventHandler(this.ButtonInverse_Click);
+            this.ButtonInverse.BackColor = Color.Red;
             // 
             // ButtonStar
             // 
@@ -241,6 +244,7 @@
             this.ButtonPercent.Text = "%";
             this.ButtonPercent.UseVisualStyleBackColor = true;
             this.ButtonPercent.Click += new System.EventHandler(this.ButtonPercent_Click);
+            this.ButtonPercent.BackColor = Color.Red;
             // 
             // ButtonSlash
             // 
@@ -261,6 +265,7 @@
             this.ButtonSquareRoot.Text = "sqrt";
             this.ButtonSquareRoot.UseVisualStyleBackColor = true;
             this.ButtonSquareRoot.Click += new System.EventHandler(this.ButtonSquareRoot_Click);
+            this.ButtonSquareRoot.BackColor = Color.Red;
             // 
             // ButtonBackspace
             // 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -14,6 +15,7 @@ namespace Calculator
     {
         private MainMenu mainMenu;
         private const string MathSymbols = "+-*/";
+        private const string Numbers = "0123456789";
         public Calculator()
         {
             InitializeComponent();
@@ -93,18 +95,21 @@ namespace Calculator
 
         private void NumberPlusMinus_Click(object sender, EventArgs e)
         {
-            if (Screen.Text.First() == '-')
-                Screen.Text = Screen.Text.Remove(0, 1);
-            else
-                Screen.Text = '-' + Screen.Text;
+            if (!HasMathSymbolOnScreen(Screen.Text))
+            {
+                if (Screen.Text.First() == '-')
+                    Screen.Text = Screen.Text.Remove(0, 1);
+                else
+                    Screen.Text = '-' + Screen.Text;
+            }
         }
 
         private void ButtonDot_Click(object sender, EventArgs e)
         {
-            if (MathSymbols.Contains(Screen.Text.Last()))
-                Screen.Text += "0.";
-            else
-                Screen.Text += ".";
+            if (string.IsNullOrEmpty(Screen.Text) || MathSymbols.Contains(Screen.Text.Last()))
+                Screen.Text += "0,";
+            else if (!NumberAlreadyHasDot(Screen.Text))
+                Screen.Text += ",";
         }
 
         private void ButtonPlus_Click(object sender, EventArgs e)
@@ -114,7 +119,24 @@ namespace Calculator
 
         private void ButtonEquals_Click(object sender, EventArgs e)
         {
-            throw new NotImplementedException("Sorry bro");
+            if (Screen.Text.Length < 3 || !HasMathSymbolOnScreen(Screen.Text))
+                return;
+
+            float firstNumber = 0, secondNumber = 0;
+            char symbol = ' ';
+
+            for (int i = 1; i < Screen.Text.Length; i++)
+            {
+                if (MathSymbols.Contains(Screen.Text[i]))
+                {
+                    firstNumber = float.Parse(Screen.Text.Substring(0, i));
+                    symbol = Screen.Text[i];
+                    secondNumber = float.Parse(Screen.Text.Substring(i + 1, Screen.Text.Length - i - 1));
+                    break;
+                }
+            }
+
+            Screen.Text = ReturnEqualityResult(symbol, firstNumber, secondNumber);
         }
 
         private void ButtonMinus_Click(object sender, EventArgs e)
@@ -124,7 +146,8 @@ namespace Calculator
 
         private void ButtonInverse_Click(object sender, EventArgs e)
         {
-            throw new NotImplementedException("Sorry bro");
+            if (!HasMathSymbolOnScreen(Screen.Text))
+                throw new NotImplementedException("Sorry bro");
         }
 
         private void ButtonStar_Click(object sender, EventArgs e)
@@ -134,7 +157,8 @@ namespace Calculator
 
         private void ButtonPercent_Click(object sender, EventArgs e)
         {
-            throw new NotImplementedException("Sorry bro");
+            if (!HasMathSymbolOnScreen(Screen.Text))
+                throw new NotImplementedException("Sorry bro");
         }
 
         private void ButtonSlash_Click(object sender, EventArgs e)
@@ -144,12 +168,14 @@ namespace Calculator
 
         private void ButtonSquareRoot_Click(object sender, EventArgs e)
         {
-            throw new NotImplementedException("Sorry bro");
+            if (!HasMathSymbolOnScreen(Screen.Text))
+                throw new NotImplementedException("Sorry bro");
         }
 
         private void ButtonBackspace_Click(object sender, EventArgs e)
         {
-            Screen.Text = DeleteLastCharacter(Screen.Text);
+            if (!string.IsNullOrEmpty(Screen.Text))
+                Screen.Text = DeleteLastCharacter(Screen.Text);
         }
 
         private void ButtonClearEverything_Click(object sender, EventArgs e)
@@ -167,12 +193,57 @@ namespace Calculator
             return text.Remove(text.Length - 1, 1);
         }
 
+        private bool NumberAlreadyHasDot(string text)
+        {
+            for (int i = text.Length - 1; i >= 0; i--)
+            {
+                if (text[i] == '.')
+                    return true;
+                else if (MathSymbols.Contains(text[i]))
+                    return false;
+            }
+
+            return false;
+        }
+
         private string AddOrReplaceSymbol(string text, char newSymbol)
         {
             if (!string.IsNullOrEmpty(text) && MathSymbols.Contains(text.Last()))
                 text = DeleteLastCharacter(text);
+            else if (HasMathSymbolOnScreen(text) || string.IsNullOrEmpty(text))
+                return text;
 
             return text + newSymbol;
+        }
+
+        private bool HasMathSymbolOnScreen(string text)
+        {
+            if (!string.IsNullOrEmpty(text) && MinusIsFirstCharcter(text))
+                return HasMathSymbolOnScreen(text.Remove(0, 1));
+
+            return text.Any(t => MathSymbols.Contains(t));
+        }
+
+        private bool MinusIsFirstCharcter(string text)
+        {
+            return text.First() == '-';
+        }
+
+        private string ReturnEqualityResult(char symbol, float firstNumber, float secondNumber)
+        {
+            switch (symbol)
+            {
+                case '+':
+                    return (firstNumber + secondNumber).ToString();
+                case '-':
+                    return (firstNumber - secondNumber).ToString();
+                case '*':
+                    return (firstNumber * secondNumber).ToString();
+                case '/':
+                    return (firstNumber / secondNumber).ToString();
+                default:
+                    return Screen.Text;
+            }
         }
     }
 }
