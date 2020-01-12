@@ -147,7 +147,11 @@ namespace Calculator
         private void ButtonInverse_Click(object sender, EventArgs e)
         {
             if (!HasMathSymbolOnScreen(Screen.Text))
-                throw new NotImplementedException("Sorry bro");
+            {
+                double result = double.Parse(Screen.Text);
+                result = 1 / result;
+                Screen.Text = result.ToString();
+            }
         }
 
         private void ButtonStar_Click(object sender, EventArgs e)
@@ -158,7 +162,11 @@ namespace Calculator
         private void ButtonPercent_Click(object sender, EventArgs e)
         {
             if (!HasMathSymbolOnScreen(Screen.Text))
-                throw new NotImplementedException("Sorry bro");
+            {
+                double result = double.Parse(Screen.Text);
+                result *= 100;
+                Screen.Text = result.ToString() + "%";
+            }
         }
 
         private void ButtonSlash_Click(object sender, EventArgs e)
@@ -169,7 +177,11 @@ namespace Calculator
         private void ButtonSquareRoot_Click(object sender, EventArgs e)
         {
             if (!HasMathSymbolOnScreen(Screen.Text))
-                throw new NotImplementedException("Sorry bro");
+            {
+                double result = double.Parse(Screen.Text);
+                result = Math.Sqrt(result);
+                Screen.Text = result.ToString();
+            }
         }
 
         private void ButtonBackspace_Click(object sender, EventArgs e)
@@ -197,7 +209,7 @@ namespace Calculator
         {
             for (int i = text.Length - 1; i >= 0; i--)
             {
-                if (text[i] == '.')
+                if (text[i] == ',')
                     return true;
                 else if (MathSymbols.Contains(text[i]))
                     return false;
@@ -243,6 +255,17 @@ namespace Calculator
                     return (firstNumber / secondNumber).ToString();
                 default:
                     return Screen.Text;
+            }
+        }
+
+        //not ready yet
+        private void Calculator_KeyDown(object sender, KeyEventArgs e)
+        {
+            var kc = new KeysConverter();
+            var keyPressed = char.Parse(kc.ConvertToString(e.KeyCode));
+            if (keyPressed > 47 && keyPressed < 58)
+            {
+                Screen.Text += keyPressed;
             }
         }
     }
