@@ -1,13 +1,7 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Windows.Input;
 
 namespace Calculator
 {
@@ -15,7 +9,7 @@ namespace Calculator
     {
         private MainMenu mainMenu;
         private const string MathSymbols = "+-*/";
-        private const string Numbers = "0123456789";
+
         public Calculator()
         {
             InitializeComponent();
@@ -31,6 +25,8 @@ namespace Calculator
             MenuItem Help = mainMenu.MenuItems.Add("&Help");
             Help.MenuItems.Add(new MenuItem("&Me ObiWan Kenobi"));
             this.Menu = mainMenu;
+            this.KeyPreview = true;
+            this.KeyDown += new KeyEventHandler(Calculator_KeyDown);
         }
 
         private void Calculator_Load(object sender, EventArgs e)
@@ -43,83 +39,175 @@ namespace Calculator
 
         //}
 
-        private void Number0_Click(object sender, EventArgs e)
+        private void Button0_Click(object sender, EventArgs e)
         {
-            Screen.Text += "0";
+            HandleDigitButton('0');
         }
 
         private void Button1_Click(object sender, EventArgs e)
         {
-            Screen.Text += "1";
+            HandleDigitButton('1');
         }
 
         private void Button2_Click(object sender, EventArgs e)
         {
-            Screen.Text += "2";
+            HandleDigitButton('2');
         }
 
         private void Button3_Click(object sender, EventArgs e)
         {
-            Screen.Text += "3";
+            HandleDigitButton('3');
         }
 
         private void Button4_Click(object sender, EventArgs e)
         {
-            Screen.Text += "4";
+            HandleDigitButton('4');
         }
 
         private void Button5_Click(object sender, EventArgs e)
         {
-            Screen.Text += "5";
+            HandleDigitButton('5');
         }
 
         private void Button6_Click(object sender, EventArgs e)
         {
-            Screen.Text += "6";
+            HandleDigitButton('6');
         }
 
         private void Button7_Click(object sender, EventArgs e)
         {
-            Screen.Text += "7";
+            HandleDigitButton('7');
         }
 
         private void Button8_Click(object sender, EventArgs e)
         {
-            Screen.Text += "8";
+            HandleDigitButton('8');
         }
 
         private void Button9_Click(object sender, EventArgs e)
         {
-            Screen.Text += "9";
+            HandleDigitButton('9');
         }
 
         private void NumberPlusMinus_Click(object sender, EventArgs e)
         {
-            if (!HasMathSymbolOnScreen(Screen.Text))
+            if (IsNotEmptyAndIsASingleNumber(Screen.Text))
             {
-                if (Screen.Text.First() == '-')
+                if (MinusIsFirstCharcter(Screen.Text))
+                {
                     Screen.Text = Screen.Text.Remove(0, 1);
+                }
                 else
+                {
                     Screen.Text = '-' + Screen.Text;
+                }
             }
         }
 
-        private void ButtonDot_Click(object sender, EventArgs e)
+        private void ButtonComma_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrEmpty(Screen.Text) || MathSymbols.Contains(Screen.Text.Last()))
-                Screen.Text += "0,";
-            else if (!NumberAlreadyHasDot(Screen.Text))
-                Screen.Text += ",";
+            HandleCommaButton();
         }
 
-        private void ButtonPlus_Click(object sender, EventArgs e)
+        private void ButtonAddition_Click(object sender, EventArgs e)
         {
-            Screen.Text = AddOrReplaceSymbol(Screen.Text, '+');
+            HandleAdditionButton();
         }
 
         private void ButtonEquals_Click(object sender, EventArgs e)
         {
-            if (Screen.Text.Length < 3 || !HasMathSymbolOnScreen(Screen.Text))
+            HandleEqualsButton();
+        }
+
+        private void ButtonSubtraction_Click(object sender, EventArgs e)
+        {
+            HandleSubtractionButton();
+        }
+
+        private void ButtonInverse_Click(object sender, EventArgs e)
+        {
+            if (IsNotEmptyAndIsASingleNumber(Screen.Text))
+            {
+                Screen.Text = HandleDivision(1, float.Parse(Screen.Text));
+            }
+        }
+
+        private void ButtonMultiplication_Click(object sender, EventArgs e)
+        {
+            HandleMultiplicationButton();
+        }
+
+        private void ButtonPercent_Click(object sender, EventArgs e)
+        {
+            HandlePercentButton();
+        }
+
+        private void ButtonDivision_Click(object sender, EventArgs e)
+        {
+            HandleDivisionButton();
+        }
+
+        private void ButtonSquareRoot_Click(object sender, EventArgs e)
+        {
+            if (IsNotEmptyAndIsASingleNumber(Screen.Text))
+            {
+                double result = double.Parse(Screen.Text);
+                result = Math.Sqrt(result);
+                Screen.Text = result.ToString();
+            }
+        }
+        private void ButtonBackspace_Click(object sender, EventArgs e)
+        {
+            HandleBackspaceButton();
+        }
+
+        private void ButtonClearEverything_Click(object sender, EventArgs e)
+        {
+            Screen.Text = "";
+        }
+
+        private void ButtonClear_Click(object sender, EventArgs e)
+        {
+            Screen.Text = "";
+        }
+
+        private void HandleDigitButton(char digit)
+        {
+            Screen.Text += digit;
+        }
+
+        private void HandleCommaButton()
+        {
+            if (string.IsNullOrEmpty(Screen.Text) || MathSymbols.Contains(Screen.Text.Last()))
+                Screen.Text += "0,";
+            else if (NumberAlreadyHasComma(Screen.Text) == false)
+                Screen.Text += ',';
+        }
+
+        private void HandleAdditionButton()
+        {
+            Screen.Text = AddOrReplaceSymbol(Screen.Text, '+');
+        }
+
+        private void HandleSubtractionButton()
+        {
+            Screen.Text = AddOrReplaceSymbol(Screen.Text, '-');
+
+        }
+
+        private void HandleMultiplicationButton()
+        {
+            Screen.Text = AddOrReplaceSymbol(Screen.Text, '*');
+        }
+
+        private void HandleDivisionButton()
+        {
+            Screen.Text = AddOrReplaceSymbol(Screen.Text, '/');
+        }
+
+        private void HandleEqualsButton()
+        {
+            if (string.IsNullOrEmpty(Screen.Text) || IsSingleNumber(Screen.Text))
                 return;
 
             float firstNumber = 0, secondNumber = 0;
@@ -139,29 +227,9 @@ namespace Calculator
             Screen.Text = ReturnEqualityResult(symbol, firstNumber, secondNumber);
         }
 
-        private void ButtonMinus_Click(object sender, EventArgs e)
+        private void HandlePercentButton()
         {
-            Screen.Text = AddOrReplaceSymbol(Screen.Text, '-');
-        }
-
-        private void ButtonInverse_Click(object sender, EventArgs e)
-        {
-            if (!HasMathSymbolOnScreen(Screen.Text))
-            {
-                double result = double.Parse(Screen.Text);
-                result = 1 / result;
-                Screen.Text = result.ToString();
-            }
-        }
-
-        private void ButtonStar_Click(object sender, EventArgs e)
-        {
-            Screen.Text = AddOrReplaceSymbol(Screen.Text, '*');
-        }
-
-        private void ButtonPercent_Click(object sender, EventArgs e)
-        {
-            if (!HasMathSymbolOnScreen(Screen.Text))
+            if (IsNotEmptyAndIsASingleNumber(Screen.Text) && Screen.Text.Contains('%') == false)
             {
                 double result = double.Parse(Screen.Text);
                 result *= 100;
@@ -169,35 +237,10 @@ namespace Calculator
             }
         }
 
-        private void ButtonSlash_Click(object sender, EventArgs e)
+        private void HandleBackspaceButton()
         {
-            Screen.Text = AddOrReplaceSymbol(Screen.Text, '/');
-        }
-
-        private void ButtonSquareRoot_Click(object sender, EventArgs e)
-        {
-            if (!HasMathSymbolOnScreen(Screen.Text))
-            {
-                double result = double.Parse(Screen.Text);
-                result = Math.Sqrt(result);
-                Screen.Text = result.ToString();
-            }
-        }
-
-        private void ButtonBackspace_Click(object sender, EventArgs e)
-        {
-            if (!string.IsNullOrEmpty(Screen.Text))
+            if (string.IsNullOrEmpty(Screen.Text) == false)
                 Screen.Text = DeleteLastCharacter(Screen.Text);
-        }
-
-        private void ButtonClearEverything_Click(object sender, EventArgs e)
-        {
-            Screen.Text = "";
-        }
-
-        private void ButtonClear_Click(object sender, EventArgs e)
-        {
-            Screen.Text = "";
         }
 
         private string DeleteLastCharacter(string text)
@@ -205,7 +248,7 @@ namespace Calculator
             return text.Remove(text.Length - 1, 1);
         }
 
-        private bool NumberAlreadyHasDot(string text)
+        private bool NumberAlreadyHasComma(string text)
         {
             for (int i = text.Length - 1; i >= 0; i--)
             {
@@ -220,25 +263,45 @@ namespace Calculator
 
         private string AddOrReplaceSymbol(string text, char newSymbol)
         {
-            if (!string.IsNullOrEmpty(text) && MathSymbols.Contains(text.Last()))
-                text = DeleteLastCharacter(text);
-            else if (HasMathSymbolOnScreen(text) || string.IsNullOrEmpty(text))
+            if (string.IsNullOrEmpty(text))
+            {
                 return text;
+            }
+            if (MathSymbols.Contains(text.Last()))
+            {
+                text = DeleteLastCharacter(text);
+            }
+            if (IsSingleNumber(text) == false)
+            {
+                return text;
+            }
 
             return text + newSymbol;
-        }
-
-        private bool HasMathSymbolOnScreen(string text)
-        {
-            if (!string.IsNullOrEmpty(text) && MinusIsFirstCharcter(text))
-                return HasMathSymbolOnScreen(text.Remove(0, 1));
-
-            return text.Any(t => MathSymbols.Contains(t));
         }
 
         private bool MinusIsFirstCharcter(string text)
         {
             return text.First() == '-';
+        }
+
+        private bool IsNotEmptyAndIsASingleNumber(string text)
+        {
+            if (string.IsNullOrEmpty(text))
+            {
+                return false;
+            }
+
+            return IsSingleNumber(text);
+        }
+
+        private bool IsSingleNumber(string text)
+        {
+            if (MinusIsFirstCharcter(text))
+            {
+                text = text.Remove(0, 1);
+            }
+
+            return text.Any(t => MathSymbols.Contains(t)) == false;
         }
 
         private string ReturnEqualityResult(char symbol, float firstNumber, float secondNumber)
@@ -252,20 +315,94 @@ namespace Calculator
                 case '*':
                     return (firstNumber * secondNumber).ToString();
                 case '/':
-                    return (firstNumber / secondNumber).ToString();
+                    return HandleDivision(firstNumber, secondNumber);
                 default:
                     return Screen.Text;
             }
         }
 
-        //not ready yet
-        private void Calculator_KeyDown(object sender, KeyEventArgs e)
+        private string HandleDivision(float firstNumber, float secondNumber)
         {
-            var kc = new KeysConverter();
-            var keyPressed = char.Parse(kc.ConvertToString(e.KeyCode));
-            if (keyPressed > 47 && keyPressed < 58)
+            if (secondNumber == 0)
             {
-                Screen.Text += keyPressed;
+                return Screen.Text;
+            }
+            else
+            {
+                return (firstNumber / secondNumber).ToString();
+            }
+        }
+
+        void Calculator_KeyDown(object sender, KeyEventArgs e)
+        {
+            switch (e.KeyCode.ToString())
+            {
+                case "D0":
+                case "NumPad0":
+                    HandleDigitButton('0');
+                    break;
+                case "D1":
+                case "NumPad1":
+                    HandleDigitButton('1');
+                    break;
+                case "D2":
+                case "NumPad2":
+                    HandleDigitButton('2');
+                    break;
+                case "D3":
+                case "NumPad3":
+                    HandleDigitButton('3');
+                    break;
+                case "D4":
+                case "NumPad4":
+                    HandleDigitButton('4');
+                    break;
+                case "D5":
+                case "NumPad5":
+                    HandleDigitButton('5');
+                    break;
+                case "D6":
+                case "NumPad6":
+                    HandleDigitButton('6');
+                    break;
+                case "D7":
+                case "NumPad7":
+                    HandleDigitButton('7');
+                    break;
+                case "D8":
+                case "NumPad8":
+                    HandleDigitButton('8');
+                    break;
+                case "D9":
+                case "NumPad9":
+                    HandleDigitButton('9');
+                    break;
+                case "Oemcomma":
+                case "OemPeriod":
+                case "Decimal":
+                    HandleCommaButton();
+                    break;
+                case "Oemplus":
+                case "Add":
+                    HandleAdditionButton();
+                    break;
+                case "OemMinus":
+                case "Subtract":
+                    HandleSubtractionButton();
+                    break;
+                case "Multiply":
+                    HandleMultiplicationButton();
+                    break;
+                case "OemQuestion":
+                case "Divide":
+                    HandleDivisionButton();
+                    break;
+                case "Return":
+                    HandleEqualsButton();
+                    break;
+                case "Back":
+                    HandleBackspaceButton();
+                    break;
             }
         }
     }
